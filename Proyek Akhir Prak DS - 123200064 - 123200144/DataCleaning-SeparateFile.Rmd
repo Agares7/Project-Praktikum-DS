@@ -1,0 +1,54 @@
+---
+title: "Cleaning Data"
+author: "Muhammad Rizki Firmansyah/123200064 & Ardhian Kusumayuda/123200144"
+date: "2022-11-20"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+```{r}
+library(tm) #data cleaning
+library(vroom) #load Dataset
+library(here) #save Dataset
+```
+
+```{r load dataset}
+d <- vroom(here('ReviewTraveloka-3000.csv'))
+ulasan <- d$content
+ulasan1 <- Corpus(VectorSource(ulasan))
+removeURL <- function(x) gsub("http[^[:space:]]*", "", x)
+reviewclean <- tm_map(ulasan1, removeURL)
+removeNL <- function(y) gsub("\n", " ", y)
+reviewclean <- tm_map(ulasan1, removeNL)
+replacecomma <- function(y) gsub(",", "", y)
+reviewclean <- tm_map(reviewclean, replacecomma)
+removetitik2 <- function(y) gsub(":", "", y)
+reviewclean <- tm_map(reviewclean, removetitik2)
+removetitikkoma <- function(y) gsub(";", " ", y)
+reviewclean <- tm_map(reviewclean, removetitikkoma)
+removetitik3 <- function(y) gsub("p...", "", y)
+reviewclean <- tm_map(reviewclean, removetitik3)
+removeamp <- function(y) gsub("&amp", "", y)
+reviewclean <- tm_map(reviewclean, removeamp)
+removeUN <- function(z) gsub("@\\w+", "", z)
+reviewclean <- tm_map(reviewclean, removeUN)
+remove.all <- function(xy) gsub("[^[:alpha:][:space:]]*", "", xy)
+reviewclean <- tm_map(reviewclean, remove.all)
+reviewclean <- tm_map(reviewclean, removePunctuation)
+reviewclean <- tm_map(reviewclean, tolower)
+MyStopWords <- readLines("stopwords-id.txt")
+reviewclean <- tm_map(reviewclean,removeWords,MyStopWords)
+
+
+dataframe <- data.frame(text=unlist(sapply(reviewclean,`[`)),stringsAsFactors = F)
+View(dataframe)
+write.csv(dataframe,file = 'ReviewTraveloka-Clean.csv')
+
+
+```
+
+
